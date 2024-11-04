@@ -1,0 +1,2 @@
+darkdetect==0.8.0
+sv-ttk==2.6.0
