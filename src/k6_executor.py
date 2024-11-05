@@ -2,25 +2,37 @@ import subprocess
 import threading
 import os
 import tkinter as tk
-from utils import get_original_filename
+from src.common_utilities import get_original_filename, get_project_root, format_file_name, format_folder_name
 import platform
-
-def build_k6_command(selected_folder, selected_file):
+def k6_terminal_command(selected_folder, selected_file):
     original_filename = get_original_filename(selected_file, selected_folder)
     if original_filename:
         category = selected_folder.replace(' ', '-').lower()
         
         # Get the full path to the k6 executable
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        k6_path = os.path.join(current_dir, 'bin', 'k6.exe' if platform.system() == "Windows" else 'k6')
-        k6_config_file = os.path.join(current_dir, 'k6-data', category, original_filename)
+        project_root = get_project_root()
+        k6_path = os.path.join(project_root, 'bin', 'k6.exe' if platform.system() == "Windows" else 'k6')
+        k6_config_file = os.path.join(project_root, 'k6-data', category, original_filename)
         # Use the full path in the command
         command = f'{k6_path} run {k6_config_file}'
         return command
     return None
 
-def run_k6_test_in_terminal(selected_folder, selected_file, terminal, run_button, run_report_button):
-    command = build_k6_command(selected_folder, selected_file)
+def k6_report_command(selected_folder, selected_file):
+    original_filename = get_original_filename(selected_file, selected_folder)
+    if original_filename:
+        category = selected_folder.replace(' ', '-').lower()
+        
+        # Get the full path to the k6 executable
+        project_root = get_project_root()
+        k6_path = os.path.join(project_root, 'bin', 'k6.exe' if platform.system() == "Windows" else 'k6')
+        k6_config_file = os.path.join(project_root, 'k6-data', category, original_filename)
+        # Use the full path in the command
+        command = f'{k6_path} run {k6_config_file}'
+        return command
+    return None
+def run_k6_in_terminal(selected_folder, selected_file, terminal, run_button, run_report_button):
+    command = k6_terminal_command(selected_folder, selected_file)
     if not command:
         terminal.config(state=tk.NORMAL)
         terminal.insert(tk.END, "Error: Could not find the selected test file.\n")
@@ -29,8 +41,9 @@ def run_k6_test_in_terminal(selected_folder, selected_file, terminal, run_button
 
     terminal.config(state=tk.NORMAL)
     terminal.delete(1.0, tk.END)
-    terminal.insert(tk.END, f"Running test: {command}\n\n")
+    terminal.insert(tk.END, f"Running test: {selected_file}\n")
     terminal.config(state=tk.DISABLED)
+
 
     def run_command():
         try:
@@ -59,8 +72,8 @@ def run_k6_test_in_terminal(selected_folder, selected_file, terminal, run_button
 
     threading.Thread(target=run_command).start()
 
-def run_k6_test_and_report(selected_folder, selected_file, terminal, run_button, run_report_button):
-    command = build_k6_command(selected_folder, selected_file)
+def run_k6_and_report(selected_folder, selected_file, terminal, run_button, run_report_button):
+    command = k6_report_command(selected_folder, selected_file)
     if not command:
         terminal.config(state=tk.NORMAL)
         terminal.insert(tk.END, "Error: Could not find the selected test file.\n")
@@ -69,7 +82,7 @@ def run_k6_test_and_report(selected_folder, selected_file, terminal, run_button,
 
     terminal.config(state=tk.NORMAL)
     terminal.delete(1.0, tk.END)
-    terminal.insert(tk.END, f"Running test: {command}\n\n")
+    terminal.insert(tk.END, f"Running test: {selected_file}\n")
     terminal.config(state=tk.DISABLED)
 
     def run_command():
